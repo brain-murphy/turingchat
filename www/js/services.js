@@ -158,27 +158,28 @@ function (Auth, $q, FIREBASE_URL) {
 .factory('UserStats', ['Auth', 'FIREBASE_URL', '$firebaseObject',
 	function (Auth, FIREBASE_URL, $firebaseObject) {
 		var userUid,
-			chatsUserRef = new Firebase(FIREBASE_URL + 'users/' + userUid),
-			numCorrectFirebaseObject = getFirebaseObjectForChild('num_correct'),
-			numIncorrectFirebaseObject = getFirebaseObjectForChild('num_incorrect'),
-			scoreFirebaseObject = getFirebaseObjectForChild('score');
+			userRef,
+			userInfoFirebaseObject;
+			// numCorrectFirebaseObject,
+			// numIncorrectFirebaseObject,
+			// scoreFirebaseObject;
 		
 		function initializeProperties(authData) {
 			userUid = authData.uid,
-			chatsUserRef = new Firebase(FIREBASE_URL + 'users/' + userUid),
-			numCorrectFirebaseObject = getFirebaseObjectForChild('num_correct'),
-			numIncorrectFirebaseObject = getFirebaseObjectForChild('num_incorrect'),
-			scoreFirebaseObject = getFirebaseObjectForChild('score');
+			userRef = new Firebase(FIREBASE_URL + 'users/' + userUid),
+			userInfoFirebaseObject = $firebaseObject(userRef);
+			// numCorrectFirebaseObject = getFirebaseObjectForChild('num_correct'),
+			// numIncorrectFirebaseObject = getFirebaseObjectForChild('num_incorrect'),
+			// scoreFirebaseObject = getFirebaseObjectForChild('score');
+			
 			
 			return {
-				score: scoreFirebaseObject,
-				numCorrect: numCorrectFirebaseObject,
-				numIncorrect: numIncorrectFirebaseObject
+				userInfo: userInfoFirebaseObject
 			}
 		}
 		
 		function getFirebaseObjectForChild(childName) {
-			var refToObject = chatsUserRef.child(childName);
+			var refToObject = userRef.child(childName);
 			
 			return $firebaseObject(refToObject);
 		}

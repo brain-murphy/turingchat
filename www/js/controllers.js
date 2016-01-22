@@ -24,9 +24,7 @@ angular.module('app.controllers', ['app.services'])
 	/////////////////////////////////////////////
 	
 	function initializeScopeBindings() {
-		$scope.score = userStats.score;
-		$scope.numCorrect = userStats.numCorrect;
-		$scope.numIncorrect = userStats.numIncorrect;
+		$scope.userInfo = userStats.userInfo;
 	}
 }])
  
