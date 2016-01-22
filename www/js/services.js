@@ -120,5 +120,29 @@ angular.module('app.services', ['firebase'])
 			addMessage: addMessage
 		};
 	}
+])
+
+.factory('UserStats', ['AuthManager', 'FIREBASE_URL', '$firebaseObject',
+	function (AuthManager, FIREBASE_URL, $firebaseObject) {
+		var userUid = AuthManager.getAuth().uid,
+			chatsUserRef = new Firebase(FIREBASE_URL + 'users/' + userUid),
+			numCorrectFirebaseObject = getFirebaseObjectForChild('num_correct'),
+			numIncorrectFirebaseObject = getFirebaseObjectForChild('num_incorrect'),
+			scoreFirebaseObject = getFirebaseObjectForChild('score');
+		
+		
+		function getFirebaseObjectForChild(childName) {
+			var refToObject = chatsUserRef.child(childName);
+			
+			return $firebaseObject(refToObject);
+		}
+		
+		
+		return {
+			score: scoreFirebaseObject,
+			numCorrect: numCorrectFirebaseObject,
+			numIncorrect: numIncorrectFirebaseObject
+		}
+	}
 ]);
 

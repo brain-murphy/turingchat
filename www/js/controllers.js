@@ -1,6 +1,6 @@
 /* global angular */
 
-angular.module('app.controllers', [])
+angular.module('app.controllers', ['app.services'])
   
 .controller('chatCtrl', function($scope, auth, chat) {
 
@@ -17,7 +17,16 @@ angular.module('app.controllers', [])
 	}
 })
    
-.controller('homeCtrl', function($scope) {
+.controller('homeCtrl', ['$scope', 'UserStats', function($scope, UserStats) {
 	
-})
+	initializeScopeBindings();
+	
+	/////////////////////////////////////////////
+	
+	function initializeScopeBindings() {
+		$scope.score = UserStats.score;
+		$scope.numCorrect = UserStats.numCorrect;
+		$scope.numIncorrect = UserStats.numIncorrect;
+	}
+}])
  

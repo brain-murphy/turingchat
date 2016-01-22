@@ -38,7 +38,6 @@ angular.module('app.routes', ['app.services'])
       controller: 'homeCtrl',
 	  resolve: {
 		  auth: ['AuthManager', 'Auth', function (AuthManager, Auth) {
-			  var auth =  AuthManager.getAuth();
 			  if (!AuthManager.getAuth()) {
 				  AuthManager.signIn();
 			  }
