@@ -14,7 +14,8 @@ angular.module('app.services', ['firebase'])
 	}
 ])
 
-.factory('AuthManager', ['Auth', function (Auth) {
+.factory('AuthManager', ['Auth', '$q', 'FIREBASE_URL',
+function (Auth, $q, FIREBASE_URL) {
 	function generateRandomEmail() {
 		return generateRandomString() + '@fake.turingchat.com';
 	}
@@ -54,10 +55,42 @@ angular.module('app.services', ['firebase'])
 		}
 	}
 	
+	/*
+		returns promise that contains the firebase auth property,
+		and evaluates once the user info record has been written to the
+		database
+	*/
+	function createUserAndSignIn() {
+		return Auth.$createUser(getAuthInfo())
+			.then(function (authData) {
+				return Auth.$authWithPassword(getAuthInfo());
+			})
+			.then(addUserInfoToFirebaseRecord);
+	}
+	
+	function addUserInfoToFirebaseRecord(authData) {
+		var usersFirebaseRef = new Firebase(FIREBASE_URL + 'users/' + authData.uid);
+		
+		return $q(function (resolve, reject) {
+			usersFirebaseRef.set(initializeNewUserRecord(), function () {
+					resolve(authData);
+			});
+		});
+	}
+	
+	function initializeNewUserRecord(userUid) {
+		return {
+				score:0,
+				num_correct:0,
+				num_incorrect:0
+		};
+	}
+	
 	function signIn() {
+		console.log('signIn()');
 		if (!Auth.$getAuth()) {
 			if (!hasLoggedInBefore()) {
-				return Auth.$createUser(getAuthInfo());
+				return createUserAndSignIn();
 			} else {
 				return Auth.$authWithPassword(getAuthInfo());
 			}
@@ -67,7 +100,7 @@ angular.module('app.services', ['firebase'])
 	}
 	
 	return {
-		getAuth: Auth.$getAuth,
+		getAuth: Auth.$getAuth.bind(Auth),
 		signIn: signIn
 	}
 }])
@@ -122,27 +155,35 @@ angular.module('app.services', ['firebase'])
 	}
 ])
 
-.factory('UserStats', ['AuthManager', 'FIREBASE_URL', '$firebaseObject',
-	function (AuthManager, FIREBASE_URL, $firebaseObject) {
-		var userUid = AuthManager.getAuth().uid,
+.factory('UserStats', ['Auth', 'FIREBASE_URL', '$firebaseObject',
+	function (Auth, FIREBASE_URL, $firebaseObject) {
+		var userUid,
 			chatsUserRef = new Firebase(FIREBASE_URL + 'users/' + userUid),
 			numCorrectFirebaseObject = getFirebaseObjectForChild('num_correct'),
 			numIncorrectFirebaseObject = getFirebaseObjectForChild('num_incorrect'),
 			scoreFirebaseObject = getFirebaseObjectForChild('score');
 		
+		function initializeProperties(authData) {
+			userUid = authData.uid,
+			chatsUserRef = new Firebase(FIREBASE_URL + 'users/' + userUid),
+			numCorrectFirebaseObject = getFirebaseObjectForChild('num_correct'),
+			numIncorrectFirebaseObject = getFirebaseObjectForChild('num_incorrect'),
+			scoreFirebaseObject = getFirebaseObjectForChild('score');
+			
+			return {
+				score: scoreFirebaseObject,
+				numCorrect: numCorrectFirebaseObject,
+				numIncorrect: numIncorrectFirebaseObject
+			}
+		}
 		
 		function getFirebaseObjectForChild(childName) {
 			var refToObject = chatsUserRef.child(childName);
 			
 			return $firebaseObject(refToObject);
 		}
-		
-		
-		return {
-			score: scoreFirebaseObject,
-			numCorrect: numCorrectFirebaseObject,
-			numIncorrect: numIncorrectFirebaseObject
-		}
+		return Auth.$waitForAuth()
+			.then(initializeProperties)
 	}
 ]);
 

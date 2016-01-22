@@ -17,16 +17,16 @@ angular.module('app.controllers', ['app.services'])
 	}
 })
    
-.controller('homeCtrl', ['$scope', 'UserStats', function($scope, UserStats) {
-	
+.controller('homeCtrl', ['$scope', 'userStats', function($scope, userStats) {
 	initializeScopeBindings();
+	
 	
 	/////////////////////////////////////////////
 	
 	function initializeScopeBindings() {
-		$scope.score = UserStats.score;
-		$scope.numCorrect = UserStats.numCorrect;
-		$scope.numIncorrect = UserStats.numIncorrect;
+		$scope.score = userStats.score;
+		$scope.numCorrect = userStats.numCorrect;
+		$scope.numIncorrect = userStats.numIncorrect;
 	}
 }])
  

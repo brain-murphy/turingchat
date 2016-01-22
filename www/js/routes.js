@@ -39,9 +39,13 @@ angular.module('app.routes', ['app.services'])
 	  resolve: {
 		  auth: ['AuthManager', 'Auth', function (AuthManager, Auth) {
 			  if (!AuthManager.getAuth()) {
-				  AuthManager.signIn();
+				   return AuthManager.signIn();
+			  } else {
+				  return Auth.$waitForAuth();
 			  }
-			  return Auth.$waitForAuth();
+		  }],
+		  userStats: ['UserStats', function (UserStats) {
+			  return UserStats;
 		  }]
 	  }
     })
