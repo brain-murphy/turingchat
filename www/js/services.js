@@ -105,14 +105,14 @@ function (Auth, $q, FIREBASE_URL) {
 	}
 }])
 
-.factory('Chat', ['$firebaseArray', '$firebaseObject', 'FIREBASE_URL',
-	function($firebaseArray, $firebaseObject, FIREBASE_URL) {
-		var rootFirebaseRef,
+.factory('Chat', ['$firebaseArray', '$firebaseObject', 'FIREBASE_URL', 'AuthManager',
+	function($firebaseArray, $firebaseObject, FIREBASE_URL, AuthManager) {
+		var chatFirebaseRef,
 			isHumanFirebaseObject,
 			messages;
 		
 		function initializeChat(chatId) {
-			rootFirebaseRef = newFirebaseRefForChat(chatId)
+			chatFirebaseRef = newFirebaseRefForChat(chatId)
 			initializeMessages();
 			initializeIsHumanFirebaseRef();
 		}
@@ -122,12 +122,12 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 		
 		function initializeMessages() {
-			var messagesFirebaseRef = rootFirebaseRef.child('messages');
+			var messagesFirebaseRef = chatFirebaseRef.child('messages');
 			messages = $firebaseArray(messagesFirebaseRef);
 		}
 		
 		function initializeIsHumanFirebaseRef() {
-			var isHumanFirebaseRef = rootFirebaseRef
+			var isHumanFirebaseRef = chatFirebaseRef
 				.child('partners')
 				.child(getUserUid())
 				.child('ai_guess');
@@ -136,7 +136,7 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 		
 		function getUserUid() {
-			rootFirebaseRef.getAuth().uid;
+			return AuthManager.getAuth().uid;
 		}
 		
 		function addMessage(messageText) {
