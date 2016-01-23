@@ -193,5 +193,185 @@ function (Auth, $q, FIREBASE_URL) {
 		
 		return $firebaseObject(statsFirebaseRef);
 	}
-]);
+])
+
+.factory('FindChat', ['AuthManager', 'FIREBASE_URL', '$firebaseArray', '$q',
+	function (AuthManager, FIREBASE_URL, $firebaseArray, $q) {
+		var deferred;
+		
+		var NO_PARTNERS_AVAILABLE = 0,
+			PARTNER_JOINED_OTHER_CHAT = 1,
+			CANCELLED = 2;
+		
+		var seekingPartnerArray,
+		    partnerUid,
+		    chatRef,
+			chatPartnersRef,
+			onPartnerJoinedChat,
+			myWaitingListEntry,
+			onWaitingListEntryChanged;
+		
+		function searchForChat() {
+			deferred = $q.defer();
+			seekingPartnerArray = $firebaseArray(getSeekingPartnerFirebaseRef());
+			
+			seekingPartnerArray.$loaded()
+				.then(checkForAvailablePartner)
+				.then(createChat)
+				.then(listenForPartnerJoiningChat)
+				.then(invitePartnerToChat)
+				.then(console.log.bind(console), addSelfToWaitingList); // if no partner, add to waiting list
+				
+			return deferred.promise;
+		}
+		
+		function checkForAvailablePartner(partnerArray) {
+			console.log('checkForAvailablePartner');
+			return $q(function (resolve, reject) {
+				if (partnerArray.length > 0) {
+					partnerUid = partnerArray.$keyAt(0);
+					resolve(partnerUid);
+				} else {
+					return reject(NO_PARTNERS_AVAILABLE);
+				}
+			});
+		}
+		
+		function invitePartnerToChat(chatRef) {
+			console.log('invitePartnerToChat');
+			var partnershipRef = getSeekingPartnerFirebaseRef().child(partnerUid);
+			
+			return $q(function (resolve, reject) {
+				partnershipRef.set(chatRef.key(), function (err) {
+					if (err) {
+						console.log('rejected')
+						return reject(PARTNER_JOINED_OTHER_CHAT); // firebase will err if the ref was already written to
+					} else {
+						console.log('resolved');
+						resolve('wrote chatId to partnership record');
+					}
+				});
+			});
+		}
+		
+		function getSeekingPartnerFirebaseRef() {
+			return new Firebase(FIREBASE_URL + 'seeking_partner/');
+		}
+		
+		function getChatsFirebaseRef() {
+			return new Firebase(FIREBASE_URL + 'chats/');
+		}
+		
+		function addSelfToWaitingList(err) {
+			console.log('addSelfToWaitingLisst');
+			handleError(err);
+			
+			myWaitingListEntry = new Firebase(FIREBASE_URL + 'seeking_partner/' + AuthManager.getAuth().uid);
+			
+			onWaitingListEntryChanged = function (data) {
+				if (data.val()) {
+					joinChat(data);
+					removeWaitListEntry();
+				}
+			}
+			
+			myWaitingListEntry.on('value', onWaitingListEntryChanged);
+			
+			myWaitingListEntry.set(false);
+		}
+		
+		function removeWaitListEntry() {
+			if (onWaitingListEntryChanged) {
+				myWaitingListEntry.off('value', onWaitingListEntryChanged);
+				myWaitingListEntry.set(null);
+			}
+		}
+		
+		function handleError(err) {
+			if (err === PARTNER_JOINED_OTHER_CHAT) {
+				removeChat();
+			} else if (err === NO_PARTNERS_AVAILABLE) {
+				
+			}
+		}
+		
+		function createChat(partnerId) {
+			console.log('createChat');
+			var chatsFirebaseRef = getChatsFirebaseRef();
+			
+			chatRef = chatsFirebaseRef.push(initializeNewChat(AuthManager.getAuth().uid));
+			return $q.resolve(chatRef);
+		}
+		
+		function removeChat() {
+			if (chatPartnersRef) {
+				chatPartnersRef.off('child_added', onPartnerJoinedChat);
+			}
+			
+			if (chatRef) {
+				chatRef.set(null);
+			}
+		}
+		
+		function initializeNewChat(myUid) {
+			var newChat = {
+				messages:[],
+				partners: {}
+			}
+			
+			newChat.partners[myUid] = createNewUserData();
+			
+			return newChat;
+		}
+		
+		function createNewUserData() {
+			return {
+				is_ai:false,
+				ai_guess:false
+			};
+		}
+		
+		function listenForPartnerJoiningChat() {
+			console.log('listenForPartnerJoiningChat');
+			onPartnerJoinedChat =  function (data) {
+				if (data.key() !== AuthManager.getAuth().uid){
+					deferred.resolve(chatRef.key());
+				}
+			}
+			
+			chatPartnersRef = chatRef.child('partners');
+			
+			chatPartnersRef.on('child_added', onPartnerJoinedChat);
+			
+			return $q.resolve(chatRef);
+		}
+		
+		function cancelChat() {
+			removeWaitListEntry();
+			
+			removeChat();
+			
+			deferred.reject('cancelled');
+		}
+		
+		function joinChat(chatId) {
+			var chatRef = getChatsFirebaseRef().child(chatId);
+			
+			chatRef.child('partners')
+				.update(createUpdateObjectForJoiningChat());
+				
+			deferred.resolve(chatId);
+		}
+		
+		function createUpdateObjectForJoiningChat() {
+			var updateObj = {};
+			updateObj[AuthManager.getAuth().uid] = createNewUserData();
+		}
+		
+		return {
+			searchForChat: searchForChat,
+			cancel: cancelChat
+		}
+}])
+;
 

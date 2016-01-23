@@ -2,24 +2,46 @@
 
 angular.module('app.controllers', ['app.services'])
   
-.controller('chatCtrl', function($scope, auth, chat) {
+.controller('chatCtrl', ['$scope', '$ionicHistory', 'chat', 
+	function($scope, $ionicHistory, chat) {
 
-	initializeScopeBindings();
-	
-	
-	
-	
-	//////////////////////////////////////////////////
-	
-	function initializeScopeBindings() {
-		$scope.messages = chat.messages;
-		$scope.isHumanGuess = chat.isHumanProperty;
+		initializeScopeBindings();
+		
+		
+		
+		//////////////////////////////////////////////////
+		
+		function initializeScopeBindings() {
+			$scope.messages = chat.messages;
+			$scope.isHumanGuess = chat.isHumanProperty;
+		}
 	}
-})
+])
 
-.controller('waitingCtrl', ['$scope', 
-	function ($scope) {
-		console.log('waitingCtrl called');
+.controller('waitingCtrl', ['$scope', '$location', 'FindChat', '$q',
+	function ($scope, $location, FindChat, $q) {
+
+		var goingToChat;
+		
+		$scope.$on('$ionicView.enter', function() {
+			goingToChat = false;
+			
+			FindChat.searchForChat()
+				.then(goToChatScreen, console.log.bind(console));
+		});
+		
+		$scope.$on('$ionicView.leave', function () {
+			if (!goingToChat) {
+				console.log('chat cancelled');
+				FindChat.cancel();
+			}
+		});
+		
+		function goToChatScreen(chatId) {
+			goingToChat = true;
+			console.log(chatId);
+			$location.path('chat/' + chatId);
+		}
 	}
 ])
    
