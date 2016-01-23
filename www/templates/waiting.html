@@ -1,4 +1,20 @@
 <ion-view title="Please Wait">
+	<style type="text/css">
+		.spinner svg {
+			width: 50%;
+			height: 50%;
+			stroke: #11c1f3;
+			margin: 0px auto;
+			display: block;
+		}
+		#loadingText {
+			text-align: center;
+		}
+	</style>
     <ion-content overflow-scroll="true" padding="true" class="has-header">
+		<ion-spinner icon="ripple"></ion-spinner>
+		<div id="loadingText">
+			<h1>Looking for a chat partner</h1>
+		</div>
     </ion-content>
 </ion-view>
