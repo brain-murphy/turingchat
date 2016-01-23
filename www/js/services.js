@@ -269,8 +269,9 @@ function (Auth, $q, FIREBASE_URL) {
 			myWaitingListEntry = new Firebase(FIREBASE_URL + 'seeking_partner/' + AuthManager.getAuth().uid);
 			
 			onWaitingListEntryChanged = function (data) {
-				if (data.val()) {
-					joinChat(data);
+				var chatId = data.val();
+				if (chatId) {
+					joinChat(chatId);
 					removeWaitListEntry();
 				}
 			}
@@ -334,7 +335,7 @@ function (Auth, $q, FIREBASE_URL) {
 		function listenForPartnerJoiningChat() {
 			console.log('listenForPartnerJoiningChat');
 			onPartnerJoinedChat =  function (data) {
-				if (data.key() !== AuthManager.getAuth().uid){
+				if (data.key() !== AuthManager.getAuth().uid) {
 					deferred.resolve(chatRef.key());
 				}
 			}
@@ -359,13 +360,15 @@ function (Auth, $q, FIREBASE_URL) {
 			
 			chatRef.child('partners')
 				.update(createUpdateObjectForJoiningChat());
-				
+			
 			deferred.resolve(chatId);
 		}
 		
 		function createUpdateObjectForJoiningChat() {
 			var updateObj = {};
 			updateObj[AuthManager.getAuth().uid] = createNewUserData();
+			
+			return updateObj;
 		}
 		
 		return {

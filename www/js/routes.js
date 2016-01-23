@@ -13,15 +13,17 @@ angular.module('app.routes', ['app.services'])
       
         
     .state('chat', {
-      url: '/chat:chatId',
+      url: '/chat/:chatId',
       templateUrl: 'templates/chat.html',
       controller: 'chatCtrl',
 	  resolve: { 
 		auth: ['AuthManager', 'Auth', function (AuthManager, Auth) {
+			console.log('auth');
 			return Auth.$requireAuth();
 		}],
         chat: ['$stateParams', 'Chat', 'auth', function ($stateParams, Chat, auth) {
-			 // auth must be run first to ensure that firebase is authed.
+			// auth must be run first to ensure that firebase is authed.
+			console.log('chat'); 
 			Chat.initialize($stateParams.chatId);
 			console.log('chat property created' + JSON.stringify(Chat));
 			return Chat;

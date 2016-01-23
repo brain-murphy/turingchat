@@ -18,8 +18,8 @@ angular.module('app.controllers', ['app.services'])
 	}
 ])
 
-.controller('waitingCtrl', ['$scope', '$location', 'FindChat', '$q', '$ionicLoading',
-	function ($scope, $location, FindChat, $q, $ionicLoading) {
+.controller('waitingCtrl', ['$scope', '$location', 'FindChat', '$q', '$ionicLoading', '$rootScope',
+	function ($scope, $location, FindChat, $q, $ionicLoading, $rootScope) {
 
 		var goingToChat;
 		
@@ -32,8 +32,6 @@ angular.module('app.controllers', ['app.services'])
 		
 		$scope.$on('$ionicView.leave', function () {
 			
-			$ionicLoading.hide();
-			
 			if (!goingToChat) {
 				console.log('chat cancelled');
 				FindChat.cancel();
@@ -44,7 +42,13 @@ angular.module('app.controllers', ['app.services'])
 		function goToChatScreen(chatId) {
 			goingToChat = true;
 			console.log(chatId);
+			
+			redirectToChatPage(chatId);
+		}
+		
+		function redirectToChatPage(chatId) {
 			$location.path('chat/' + chatId);
+			if (!$rootScope.$$phase) $rootScope.$apply();
 		}
 	}
 ])
