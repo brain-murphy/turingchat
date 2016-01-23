@@ -173,9 +173,7 @@ function (Auth, $q, FIREBASE_URL) {
 			// scoreFirebaseObject = getFirebaseObjectForChild('score');
 			
 			
-			return {
-				userInfo: userInfoFirebaseObject
-			}
+			return userInfoFirebaseObject
 		}
 		
 		function getFirebaseObjectForChild(childName) {
@@ -185,6 +183,15 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 		return Auth.$waitForAuth()
 			.then(initializeProperties)
+	}
+])
+
+.factory('HighStats', ['FIREBASE_URL', '$firebaseObject',
+	function (FIREBASE_URL, $firebaseObject) {
+		
+		var statsFirebaseRef = new Firebase(FIREBASE_URL + 'high/');
+		
+		return $firebaseObject(statsFirebaseRef);
 	}
 ]);
 

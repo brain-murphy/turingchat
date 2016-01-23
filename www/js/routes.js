@@ -27,6 +27,15 @@ angular.module('app.routes', ['app.services'])
         }]
       }
     })
+	
+	
+	
+	
+	.state('waiting', {
+		url:'/waiting',
+		templateUrl: 'templates/waiting.html',
+		controller: 'waitingCtrl'
+	})
         
       
     
@@ -46,6 +55,9 @@ angular.module('app.routes', ['app.services'])
 		  }],
 		  userStats: ['UserStats', function (UserStats) {
 			  return UserStats;
+		  }],
+		  highStats: ['HighStats', function (HighStats) {
+			  return HighStats;
 		  }]
 	  }
     })
