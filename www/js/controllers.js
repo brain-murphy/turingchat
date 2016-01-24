@@ -16,6 +16,9 @@ angular.module('app.controllers', ['app.services'])
 			chat.isHumanProperty.$bindTo($scope, "isHumanProperties");
 			
 			$scope.newMessageText = '';
+			$scope.sendMessage = sendMessage;
+			
+			$scope.getColor = getClassForMessage;
 		}
 		
 		function sendMessage(messageText) {
@@ -32,6 +35,15 @@ angular.module('app.controllers', ['app.services'])
 				text: messageText
 			}
 		}
+		
+		function getClassForMessage(message) {
+			console.log(message);
+			if (message.user === auth.uid) {
+				return 'myMessage';
+			} else {
+				return 'partnerMessage';
+			}
+		} 
 	}
 ])
 

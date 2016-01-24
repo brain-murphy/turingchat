@@ -23,6 +23,16 @@
 		.messagesRemaining {
 			text-align: center;
 		}
+		
+		.myMessage {
+			background-color: #11c1f3; 
+			padding:3px;
+		}
+		
+		.partnerMessage {
+			background-color: #33cd5f;
+			padding:3px;
+		}
 	</style>
 	
 	<div class="chatHeader">
@@ -36,52 +46,10 @@
     <ion-content class="chatMessages" overflow-scroll="true" padding="true" class="has-header">
         
             <div class="item item-body">
-                <div ng-repeat="message in messages" class="list card">
+                <div ng-repeat="message in messages" ng-class="getColor(message)" class="list card">
                     <div class="item item-body">
                         <div>
                             <p>{{message.text}}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list card">
-                    <div class="item item-body">
-                        <div>
-                            <p>Hi hello how are you</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list card">
-                    <div class="item item-body">
-                        <div>
-                            <p>Hi hello how are you</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list card">
-                    <div class="item item-body">
-                        <div>
-                            <p>Hi hello how are you</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list card">
-                    <div class="item item-body">
-                        <div>
-                            <p>Hi hello how are you</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list card">
-                    <div class="item item-body">
-                        <div>
-                            <p>Hi hello how are you</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="list card">
-                    <div class="item item-body">
-                        <div>
-                            <p>Hi hello how are you</p>
                         </div>
                     </div>
                 </div>
@@ -92,11 +60,12 @@
 	<div class="chatFooter">
 		<form class="list">
 			<label class="item item-input">
-				<span class="input-label">Message</span><textarea placeholder="hello"> </textarea>
+				<span class="input-label">Message</span>
+				<textarea ng-model="newMessageText" placeholder="hello"></textarea>
 			</label>
 		</form>
 		<form class="list">
-			<button class="button button-positive button-block ">Send</button>
+			<button ng-click="sendMessage(newMessageText)" class="button button-positive button-block ">Send</button>
 		</form>
 	</div>
 		
