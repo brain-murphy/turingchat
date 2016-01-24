@@ -2,8 +2,8 @@
 
 angular.module('app.controllers', ['app.services'])
   
-.controller('chatCtrl', ['$scope', '$ionicHistory', 'chat', 
-	function($scope, $ionicHistory, chat) {
+.controller('chatCtrl', ['$scope', '$ionicHistory', 'auth', 'chat', 
+	function($scope, $ionicHistory, auth, chat) {
 
 		initializeScopeBindings();
 		
@@ -13,7 +13,24 @@ angular.module('app.controllers', ['app.services'])
 		
 		function initializeScopeBindings() {
 			$scope.messages = chat.messages;
-			$scope.isHumanGuess = chat.isHumanProperty;
+			chat.isHumanProperty.$bindTo($scope, "isHumanProperties");
+			
+			$scope.newMessageText = '';
+		}
+		
+		function sendMessage(messageText) {
+			if (messageText) {
+				$scope.messages.$add(createNewMessageObject(messageText));
+				
+				$scope.newMessageText = '';
+			}
+		}
+		
+		function createNewMessageObject(messageText) {
+			return {
+				user: auth.uid,
+				text: messageText
+			}
 		}
 	}
 ])

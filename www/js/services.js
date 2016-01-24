@@ -105,53 +105,61 @@ function (Auth, $q, FIREBASE_URL) {
 	}
 }])
 
-.factory('Chat', ['$firebaseArray', '$firebaseObject', 'FIREBASE_URL', 'AuthManager',
-	function($firebaseArray, $firebaseObject, FIREBASE_URL, AuthManager) {
-		var chatFirebaseRef,
-			isHumanFirebaseObject,
-			messages;
+.factory('Chat', ['$firebaseArray', '$firebaseObject', 'FIREBASE_URL', 'AuthManager', '$q',
+	function($firebaseArray, $firebaseObject, FIREBASE_URL, AuthManager, $q) {
+		return function (chatId) {
+			var chatFirebaseRef,
+				isHumanFirebaseObject,
+				messages;
+			
+			function initializeChat(chatId) {
+				return $q(function (resolve, reject) {
+					chatFirebaseRef = newFirebaseRefForChat(chatId)
+					initializeMessages();
+					initializeIsHumanFirebaseObject();
+					
+					resolve(getInterfaceObject());
+				});
+			}
+			
+			function newFirebaseRefForChat(chatId) {
+				return new Firebase(FIREBASE_URL + 'chats/' + chatId);
+			}
+			
+			function initializeMessages() {
+				var messagesFirebaseRef = chatFirebaseRef.child('messages');
+				messages = $firebaseArray(messagesFirebaseRef);
+			}
+			
+			function initializeIsHumanFirebaseObject() {
+				var isHumanFirebaseRef = chatFirebaseRef
+					.child('partners')
+					.child(getUserUid());
+					
+				isHumanFirebaseObject = $firebaseObject(isHumanFirebaseRef);
+			}
+			
+			function getUserUid() {
+				return AuthManager.getAuth().uid;
+			}
+			
+			function addMessage(messageText) {
+				messages.$add({
+					user: getUserUid(),
+					text: messageText
+				});
+			}
 		
-		function initializeChat(chatId) {
-			chatFirebaseRef = newFirebaseRefForChat(chatId)
-			initializeMessages();
-			initializeIsHumanFirebaseRef();
+			function getInterfaceObject() {
+				return {
+					messages: messages,
+					isHumanProperty: isHumanFirebaseObject,
+					addMessage: addMessage
+				};
+			}
+			
+			return initializeChat(chatId);
 		}
-		
-		function newFirebaseRefForChat(chatId) {
-			return new Firebase(FIREBASE_URL + 'chats/' + chatId);
-		}
-		
-		function initializeMessages() {
-			var messagesFirebaseRef = chatFirebaseRef.child('messages');
-			messages = $firebaseArray(messagesFirebaseRef);
-		}
-		
-		function initializeIsHumanFirebaseRef() {
-			var isHumanFirebaseRef = chatFirebaseRef
-				.child('partners')
-				.child(getUserUid())
-				.child('ai_guess');
-				
-			isHumanFirebaseObject = $firebaseObject(isHumanFirebaseRef);
-		}
-		
-		function getUserUid() {
-			return AuthManager.getAuth().uid;
-		}
-		
-		function addMessage(messageText) {
-			messages.$add({
-				user: getUserUid(),
-				text: messageText
-			});
-		}
-		
-		return {
-			initialize: initializeChat,
-			messages: messages,
-			isHumanProperty: isHumanFirebaseObject,
-			addMessage: addMessage
-		};
 	}
 ])
 

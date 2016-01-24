@@ -1,11 +1,55 @@
 <ion-view title="Chat">
-    <ion-content overflow-scroll="true" padding="true" class="has-header">
-        <form class="list">
-            <ion-toggle toggle-class="toggle-positive">Human?</ion-toggle>
-        </form>
-        <h3>Messages Remaining: 10</h3>
-        <div class="list card">
+	
+	<style type="text/css">
+		.chatHeader {
+			position:absolute;
+			top:45px;
+			width:100%;
+		}
+		
+		.chatMessages {
+			top:160px;
+			bottom:130px;
+		}
+		
+		.chatFooter {
+			position:absolute;
+			bottom:0;
+			text-align:center;
+			width:100%;
+			height:130px;
+		}
+		
+		.messagesRemaining {
+			text-align: center;
+		}
+	</style>
+	
+	<div class="chatHeader">
+		<form class="list">
+			<ion-toggle ng-model="isHumanProperties.ai_guess" toggle-class="toggle-positive">Human?</ion-toggle>
+		</form>
+		
+		<h3 class="messagesRemaining">Messages Remaining: {{messagesRemaining}}</h3>
+	</div>
+	
+    <ion-content class="chatMessages" overflow-scroll="true" padding="true" class="has-header">
+        
             <div class="item item-body">
+                <div ng-repeat="message in messages" class="list card">
+                    <div class="item item-body">
+                        <div>
+                            <p>{{message.text}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list card">
+                    <div class="item item-body">
+                        <div>
+                            <p>Hi hello how are you</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="list card">
                     <div class="item item-body">
                         <div>
@@ -20,15 +64,40 @@
                         </div>
                     </div>
                 </div>
-                <form class="list">
-                    <label class="item item-input">
-                        <span class="input-label">Message</span><textarea placeholder="hello"> </textarea>
-                    </label>
-                </form>
+                <div class="list card">
+                    <div class="item item-body">
+                        <div>
+                            <p>Hi hello how are you</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list card">
+                    <div class="item item-body">
+                        <div>
+                            <p>Hi hello how are you</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="list card">
+                    <div class="item item-body">
+                        <div>
+                            <p>Hi hello how are you</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <form class="list">
-            <button class="button button-positive button-block ">Send</button>
-        </form>
     </ion-content>
+	
+	
+	<div class="chatFooter">
+		<form class="list">
+			<label class="item item-input">
+				<span class="input-label">Message</span><textarea placeholder="hello"> </textarea>
+			</label>
+		</form>
+		<form class="list">
+			<button class="button button-positive button-block ">Send</button>
+		</form>
+	</div>
+		
 </ion-view>
