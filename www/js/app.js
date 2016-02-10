@@ -9,8 +9,9 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.services', 'app.directives'])
 
-.run(['$ionicPlatform', '$rootScope', '$location',
- function($ionicPlatform, $rootScope, $location) {
+.run(['$ionicPlatform', '$rootScope', '$location', 'FIREBASE_URL',
+ function($ionicPlatform, $rootScope, $location, FIREBASE_URL) {
+     
 	var redirectForAuthError = function(event, next, previous, error) {
 		// We can catch the error thrown when the $requireAuth promise is rejected
 		// and redirect the user back to the home page
@@ -20,7 +21,7 @@ angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.services',
 	}
 	$rootScope.$on("$routeChangeError", redirectForAuthError);
 	$rootScope.$on('$stateChangeError', redirectForAuthError);
-	
+
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
