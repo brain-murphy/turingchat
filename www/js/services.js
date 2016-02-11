@@ -5,7 +5,7 @@ angular.module('app.services', ['firebase'])
 .constant('FIREBASE_URL', 'https://turingchat.firebaseio.com/')
 
 // maximum amount of messages that we are allowing the chatters to send before the game ends
-.constant('MAX_MESSAGES', 10)
+.constant('MAX_MESSAGES', 12)
 
 .factory('Auth', ['$firebaseAuth', 'FIREBASE_URL',
 	function($firebaseAuth, FIREBASE_URL) {
@@ -100,7 +100,9 @@ function (Auth, $q, FIREBASE_URL) {
 
     function getAuth() {
         if (Auth.$getAuth()) {
-            return $q.when(Auth.$getAuth());
+            return $q(function (resolve, reject) {
+                resolve(Auth.$getAuth());
+            });
         } else {
             return signIn();
         }
@@ -117,21 +119,28 @@ function (Auth, $q, FIREBASE_URL) {
 		return function (chatId) {
 			var chatFirebaseRef,
 				isHumanFirebaseObject,
+                isOpponentAI,
+                someoneLeftProperty,
 				messages,
                 userUid;
 
 			function initializeChat(chatId) {
-				return $q(function (resolve, reject) {
-					chatFirebaseRef = newFirebaseRefForChat(chatId)
-					initializeMessages();
-
-                    initUserUid()
-                    .then(initializeIsHumanFirebaseObject())
-                    .then(function () {
-                        resolve(getInterfaceObject());
-                    })
-				});
+                chatFirebaseRef = newFirebaseRefForChat(chatId)
+                initializeMessages();
+                
+                
+                return initUserUid()
+                .then(getIsOpponentAI)
+                .then(initializeIsHumanFirebaseObject)
+                .then(initializeSomeoneLeftProperty)
+                .then(getInterfaceObject);
 			}
+            
+            function initializeSomeoneLeftProperty() {
+                someoneLeftProperty = $firebaseObject(chatFirebaseRef
+                    .child('someone_left'));
+                return 'good';
+            }
 
 			function newFirebaseRefForChat(chatId) {
 				return new Firebase(FIREBASE_URL + 'chats/' + chatId);
@@ -143,17 +152,20 @@ function (Auth, $q, FIREBASE_URL) {
 			}
 
 			function initializeIsHumanFirebaseObject() {
+                console.log('initializeIsHumanFirebaseObject');
 				var isHumanFirebaseRef = chatFirebaseRef
 					.child('partners')
 					.child(userUid);
 
 				isHumanFirebaseObject = $firebaseObject(isHumanFirebaseRef);
+                return 'success1';
 			}
 
 			function initUserUid() {
-				return AuthManager.getAuth()
+                return AuthManager.getAuth()
                     .then(function (authData) {
                         userUid = authData.uid;
+                        return userUid;
                     });
 			}
 
@@ -163,13 +175,30 @@ function (Auth, $q, FIREBASE_URL) {
 					text: messageText
 				});
 			}
+            
+            function getIsOpponentAI() {
+                var parntersFirebaseRef = chatFirebaseRef.child('partners');
+                return $q(function (resolve, reject) {
+                    parntersFirebaseRef.on('child_added', findOpponentAI);  
+                    
+                    function findOpponentAI(data) {
+                        if (data.key() !== userUid) {
+                            isOpponentAI = data.val().is_ai;
+                            resolve('success');
+                        }
+                    }
+                });
+            }
 
 			function getInterfaceObject() {
+                console.log('getInterfaceObject');
 				return {
 					messages: messages,
 					isHumanProperty: isHumanFirebaseObject,
-					addMessage: addMessage
-				};
+                    isOpponentAI: isOpponentAI,
+					addMessage: addMessage,
+                    someoneLeftProperty: someoneLeftProperty
+				}
 			}
 
 			return initializeChat(chatId);
@@ -234,10 +263,12 @@ function (Auth, $q, FIREBASE_URL) {
 			myWaitingListEntry,
 			onWaitingListEntryChanged;
 
-        function initMyUid() {
+        function initMyUid(promiseValue) {
+            console.log("initMyUid");
             return AuthManager.getAuth()
                 .then(function (authData) {
                     myUid = authData.uid;
+                    return promiseValue;
                 });
         }
 
@@ -257,6 +288,7 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 
 		function checkForAvailablePartner(partnerArray) {
+            console.log("checkForAvailablePartner");
 			return $q(function (resolve, reject) {
 				if (partnerArray.length > 0) {
 					partnerUid = partnerArray.$keyAt(0);
@@ -268,6 +300,7 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 
 		function invitePartnerToChat(chatRef) {
+            console.log("invitePartnerToChat");
 			var partnershipRef = getSeekingPartnerFirebaseRef().child(partnerUid);
 
 			return $q(function (resolve, reject) {
@@ -290,6 +323,7 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 
 		function addSelfToWaitingList(err) {
+            console.log("addSelfToWaitingList");
 			handleError(err);
 
 			myWaitingListEntry = new Firebase(FIREBASE_URL + 'seeking_partner/' + myUid);
@@ -323,6 +357,7 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 
 		function createChat(partnerId) {
+            console.log("createChat");
 			var chatsFirebaseRef = getChatsFirebaseRef();
 
 			chatRef = chatsFirebaseRef.push(initializeNewChat(myUid));
@@ -342,7 +377,8 @@ function (Auth, $q, FIREBASE_URL) {
 		function initializeNewChat(myUid) {
 			var newChat = {
 				messages:[],
-				partners: {}
+				partners: {},
+                someone_left: false
 			}
 
 			newChat.partners[myUid] = createNewUserData();
@@ -358,6 +394,7 @@ function (Auth, $q, FIREBASE_URL) {
 		}
 
 		function listenForPartnerJoiningChat() {
+            console.log("ListenForParnerToJoinChat");
 			onPartnerJoinedChat =  function (data) {
 				if (data.key() !== myUid) {
 					deferred.resolve(chatRef.key());

@@ -23,6 +23,9 @@ angular.module('app.routes', ['app.services'])
         chat: ['$stateParams', 'Chat', 'auth', function ($stateParams, Chat, auth) {
 			// auth must be run first to ensure that firebase is authed.
 			return Chat($stateParams.chatId);
+        }],
+        userStats: ['UserStats', function (UserStats) {
+            return UserStats;
         }]
       }
     })

@@ -2,13 +2,18 @@
 
 angular.module('app.controllers', ['app.services'])
   
-.controller('chatCtrl', ['$scope', '$ionicHistory', 'auth', 'chat', 
-	function($scope, $ionicHistory, auth, chat) {
+.controller('chatCtrl', ['$scope', '$ionicHistory', 'auth', 'chat', 'userStats', 'MAX_MESSAGES', '$ionicModal',
+	function($scope, $ionicHistory, auth, chat, userStats, MAX_MESSAGES, $ionicModal) {
+        var unwatchForOpponentLeaving;
 
 		initializeScopeBindings();
-		
-		
-		
+        
+		initializeMessageWatcher();
+        
+        watchForOpponentLeavingChat();
+        
+        notifyOpponentIfILeaveChat();
+        
 		//////////////////////////////////////////////////
 		
 		function initializeScopeBindings() {
@@ -19,6 +24,8 @@ angular.module('app.controllers', ['app.services'])
 			$scope.sendMessage = sendMessage;
 			
 			$scope.getColor = getClassForMessage;
+            
+            $scope.messagesRemaining = MAX_MESSAGES;
 		}
 		
 		function sendMessage(messageText) {
@@ -44,6 +51,97 @@ angular.module('app.controllers', ['app.services'])
 				return 'partnerMessage';
 			}
 		} 
+        
+        function initializeMessageWatcher() {
+            $scope.messages.$watch(countMessages);
+        }
+        
+        function countMessages() {
+            if (isGameComplete()) {
+                unwatchForOpponentLeaving();
+                if (didPlayerWin()) {
+                    closeChatWithMessage('You were correct!');
+                } else {
+                    closeChatWithMessage('You were incorrect!');
+                }
+            }
+            
+            $scope.messagesRemaining = MAX_MESSAGES - $scope.messages.length;
+        }
+        
+        function isGameComplete() {
+            return $scope.messages.length > MAX_MESSAGES;
+        }
+        
+        function didPlayerWin() {
+            return chat.isOpponentAI == chat.isHumanProperty.ai_guess;
+        }
+        
+        function endChat() {
+            applyScoreChanges();
+            
+            $ionicHistory.goBack(-2); // go back to home screen
+        }
+        
+        function applyScoreChanges() {
+            if (didPlayerWin()) {
+                userStats.num_correct += 1;
+                
+                userStats.score += 2;
+            } else {
+                userStats.num_incorrect += 1;
+                
+                userStats.score -= 1;
+            }
+            
+            userStats.$save();
+        }
+        
+        function watchForOpponentLeavingChat() {
+            unwatchForOpponentLeaving = chat.someoneLeftProperty
+                .$watch(function () {
+                    if (chat.someoneLeftProperty.$value) {
+                        closeChatWithMessage('Your opponent left the chat!');
+                    }
+                });
+        }
+        
+        function closeChatWithMessage(message) {
+            addModalToScope(message)
+            .then(setupModalCloseHooks)
+            .then(function () {
+                $scope.modal.show();
+            })
+        }
+        
+        function setupModalCloseHooks() {
+            $scope.closeModal = function() {
+                $scope.modal.hide();
+            };
+            
+            $scope.$on('modal.hidden', function() {
+                endChat();
+            });
+        }
+        
+        function addModalToScope(message) {
+            var outsideScope = $scope;
+            $scope.modalText = message;
+           
+            return $ionicModal.fromTemplateUrl('textModal.html', {
+                scope: $scope,
+                animation: 'slide-in-up'
+            }).then(function(modal) {
+                outsideScope.modal = modal;
+            });
+        }
+        
+        function notifyOpponentIfILeaveChat() {
+		    $scope.$on('$ionicView.leave', function () {
+                chat.someoneLeftProperty.$value = true;
+                chat.someoneLeftProperty.$save();
+            });
+        }
 	}
 ])
 
