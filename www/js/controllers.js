@@ -44,7 +44,6 @@ angular.module('app.controllers', ['app.services'])
 		}
 		
 		function getClassForMessage(message) {
-			console.log(message);
 			if (message.user === auth.uid) {
 				return 'myMessage';
 			} else {
@@ -70,7 +69,7 @@ angular.module('app.controllers', ['app.services'])
         }
         
         function isGameComplete() {
-            return $scope.messages.length > MAX_MESSAGES;
+            return $scope.messages.length >= MAX_MESSAGES;
         }
         
         function didPlayerWin() {

@@ -91,7 +91,11 @@ function (Auth, $q, FIREBASE_URL) {
 			if (!hasLoggedInBefore()) {
 				return createUserAndSignIn();
 			} else {
-				return Auth.$authWithPassword(getAuthInfo());
+				return Auth.$authWithPassword(getAuthInfo())
+                    .catch(function (err) {
+                        localStorage.clear();
+                        return signIn();
+                    });
 			}
 		} else {
 			return $q.when(Auth.$getAuth());
