@@ -13,11 +13,11 @@ During the movie showing, players that opened the app were paired with either an
 movie-goer at the showing, or an AI chatbot. Given twelve total messages, the player
 must decide whether he or she is chatting with a human or an AI. 
 
-![chatting with an AI or a human?](https://cloud.githubusercontent.com/assets/7738472/13615017/5337d7c6-e541-11e5-8a2e-fe5198a83931.png)
+![chatting with an AI or a human?](https://cloud.githubusercontent.com/assets/7738472/14504409/b5688b18-0182-11e6-8583-9913016c7f37.png)
 
 On the home screen, players can track their score in comparison to the high scores.
 
-![looking at high scores](https://cloud.githubusercontent.com/assets/7738472/13615048/7099c87e-e541-11e5-9249-eba8432a8b41.png)
+![looking at high scores](https://cloud.githubusercontent.com/assets/7738472/14504408/b564d900-0182-11e6-969d-4e148bf82617.png)
 
 
 ## Development
